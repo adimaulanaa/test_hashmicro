@@ -99,10 +99,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           }
         },
         builder: (context, state) {
-          // if (state is AttendanceLoading) {
-          //   return const Center(child: CircularProgressIndicator());
-          // }
-
           if (state is AttendanceLoaded) {
             final today = state.todayAttendance;
             final hasCheckin = today?.checkinTime != null;
@@ -204,7 +200,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               Text(
                                 'Adi Maulana',
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),

@@ -24,8 +24,19 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   Future<AttendanceEntity?> getTodayAttendance(String locationId) async {
     final db = await _db;
     final today = DateTime.now();
-    final startOfDay = DateTime(today.year, today.month, today.day).toIso8601String();
-    final endOfDay = DateTime(today.year, today.month, today.day, 23, 59, 59).toIso8601String();
+    final startOfDay = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).toIso8601String();
+    final endOfDay = DateTime(
+      today.year,
+      today.month,
+      today.day,
+      23,
+      59,
+      59,
+    ).toIso8601String();
 
     final result = await db.query(
       'attendances',
@@ -112,7 +123,10 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   @override
   Future<List<AttendanceHistoryEntity>> getAttendanceHistories() async {
     final db = await _db;
-    final result = await db.query('attendance_histories', orderBy: 'created_at DESC');
+    final result = await db.query(
+      'attendance_histories',
+      orderBy: 'created_at DESC',
+    );
     return result.map((map) => AttendanceHistoryModel.fromMap(map)).toList();
   }
 
@@ -138,6 +152,24 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
         status: status,
         createdAt: createdAt,
       ).toMap(),
+    );
+  }
+
+  @override
+  Future<void> insertRejectedHistory({
+    required String locationId,
+    required double latitude,
+    required double longitude,
+    required String type,
+  }) async {
+    await _insertHistory(
+      attendanceId: '-', // tidak ada attendance id karena rejected
+      locationId: locationId,
+      latitude: latitude,
+      longitude: longitude,
+      type: type,
+      status: 'rejected',
+      createdAt: DateTime.now(),
     );
   }
 }

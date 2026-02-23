@@ -29,6 +29,18 @@ class _SlideActionButtonState extends State<SlideActionButton> {
   final double _buttonHeight = 64;
 
   @override
+  void didUpdateWidget(SlideActionButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // reset posisi ketika loading selesai
+    if (oldWidget.isLoading && !widget.isLoading) {
+      setState(() {
+        _thumbPosition = 0;
+        _completed = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -46,7 +58,11 @@ class _SlideActionButtonState extends State<SlideActionButton> {
             children: [
               // label
               AnimatedOpacity(
-                opacity: _completed ? 0 : (1 - (_thumbPosition / _maxSlide)),
+                opacity: widget.isLoading
+                    ? 0
+                    : _completed
+                    ? 0
+                    : (1 - (_thumbPosition / _maxSlide)),
                 duration: const Duration(milliseconds: 100),
                 child: Text(
                   widget.label,
@@ -59,33 +75,27 @@ class _SlideActionButtonState extends State<SlideActionButton> {
               ),
 
               // thumb
-              Positioned(
+              AnimatedPositioned(
+                duration: _completed
+                    ? const Duration(milliseconds: 200)
+                    : Duration.zero,
                 left: _thumbPosition + 4,
                 child: GestureDetector(
                   onHorizontalDragUpdate: (details) {
-                    if (_completed) return;
+                    if (_completed || widget.isLoading) return;
                     setState(() {
                       _thumbPosition += details.delta.dx;
                       _thumbPosition = _thumbPosition.clamp(0, _maxSlide);
                     });
                   },
                   onHorizontalDragEnd: (details) {
-                    if (_completed) return;
+                    if (_completed || widget.isLoading) return;
                     if (_thumbPosition >= _maxSlide * 0.85) {
                       setState(() {
                         _thumbPosition = _maxSlide;
                         _completed = true;
                       });
                       widget.onSlideComplete();
-                      // reset setelah 1 detik
-                      Future.delayed(const Duration(seconds: 1), () {
-                        if (mounted) {
-                          setState(() {
-                            _thumbPosition = 0;
-                            _completed = false;
-                          });
-                        }
-                      });
                     } else {
                       // balik ke awal kalau tidak sampai
                       setState(() => _thumbPosition = 0);

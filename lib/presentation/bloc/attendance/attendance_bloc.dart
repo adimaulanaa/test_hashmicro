@@ -22,12 +22,12 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     required GetAttendanceHistoryUsecase getAttendanceHistoryUsecase,
     required AttendanceRepository attendanceRepository,
     required GpsService gpsService,
-  })  : _submitAttendanceUsecase = submitAttendanceUsecase,
-        _validateRadiusUsecase = validateRadiusUsecase,
-        _getAttendanceHistoryUsecase = getAttendanceHistoryUsecase,
-        _attendanceRepository = attendanceRepository,
-        _gpsService = gpsService,
-        super(AttendanceInitial()) {
+  }) : _submitAttendanceUsecase = submitAttendanceUsecase,
+       _validateRadiusUsecase = validateRadiusUsecase,
+       _getAttendanceHistoryUsecase = getAttendanceHistoryUsecase,
+       _attendanceRepository = attendanceRepository,
+       _gpsService = gpsService,
+       super(AttendanceInitial()) {
     on<GetAttendancesEvent>(_onGetAttendances);
     on<GetAttendanceHistoriesEvent>(_onGetAttendanceHistories);
     on<CheckinEvent>(_onCheckin);
@@ -41,8 +41,15 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     emit(AttendanceLoading());
     try {
       final attendances = await _attendanceRepository.getAttendances();
-      final todayAttendance = await _attendanceRepository.getTodayAttendance(event.locationId);
-      emit(AttendanceLoaded(attendances: attendances, todayAttendance: todayAttendance));
+      final todayAttendance = await _attendanceRepository.getTodayAttendance(
+        event.locationId,
+      );
+      emit(
+        AttendanceLoaded(
+          attendances: attendances,
+          todayAttendance: todayAttendance,
+        ),
+      );
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }
@@ -76,7 +83,21 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         locationLongitude: event.locationLongitude,
       );
 
-      final status = isValid ? 'approved' : 'rejected';
+      if (!isValid) {
+        // hanya simpan ke history, tidak ke attendances
+        await _attendanceRepository.insertRejectedHistory(
+          locationId: event.locationId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          type: 'checkin',
+        );
+        emit(
+          AttendanceRejected(
+            'Checkin ditolak, kamu berada di luar radius 50 meter',
+          ),
+        );
+        return;
+      }
 
       final attendance = AttendanceEntity(
         id: const Uuid().v4(),
@@ -84,17 +105,12 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         checkinLatitude: position.latitude,
         checkinLongitude: position.longitude,
         checkinTime: DateTime.now(),
-        checkinStatus: status,
+        checkinStatus: 'approved',
         createdAt: DateTime.now(),
       );
 
       await _submitAttendanceUsecase.checkin(attendance);
-
-      if (isValid) {
-        emit(AttendanceSuccess('Checkin berhasil'));
-      } else {
-        emit(AttendanceRejected('Checkin ditolak, kamu berada di luar radius 50 meter'));
-      }
+      emit(AttendanceSuccess('Checkin berhasil'));
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }
@@ -115,21 +131,30 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         locationLongitude: event.locationLongitude,
       );
 
-      final status = isValid ? 'approved' : 'rejected';
+      if (!isValid) {
+        // hanya simpan ke history, tidak update attendances
+        await _attendanceRepository.insertRejectedHistory(
+          locationId: event.locationId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          type: 'checkout',
+        );
+        emit(
+          AttendanceRejected(
+            'Checkout ditolak, kamu berada di luar radius 50 meter',
+          ),
+        );
+        return;
+      }
 
       await _submitAttendanceUsecase.checkout(
         event.attendanceId,
         position.latitude,
         position.longitude,
         DateTime.now(),
-        status,
+        'approved',
       );
-
-      if (isValid) {
-        emit(AttendanceSuccess('Checkout berhasil'));
-      } else {
-        emit(AttendanceRejected('Checkout ditolak, kamu berada di luar radius 50 meter'));
-      }
+      emit(AttendanceSuccess('Checkout berhasil'));
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }
