@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:attendance_app/core/constants/media_colors.dart';
+import 'package:attendance_app/core/utils/toast_helper.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_bloc.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_event.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_state.dart';
@@ -67,35 +68,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             current is AttendanceLoaded || current is AttendanceInitial,
         listener: (context, state) {
           if (state is AttendanceSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-              ),
-            );
+            ToastHelper.successToast(context, state.message);
             context.read<AttendanceBloc>().add(
               GetAttendancesEvent(widget.location.id),
             );
           }
           if (state is AttendanceRejected) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 4),
-              ),
-            );
+            ToastHelper.errorToast(context, state.message, duration: 4);
             context.read<AttendanceBloc>().add(
               GetAttendancesEvent(widget.location.id),
             );
           }
           if (state is AttendanceError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            ToastHelper.errorToast(context, state.message);
           }
         },
         builder: (context, state) {

@@ -1,6 +1,7 @@
 import 'package:attendance_app/core/constants/media_colors.dart';
 import 'package:attendance_app/core/utils/botton.dart';
 import 'package:attendance_app/core/utils/custom_text_field.dart';
+import 'package:attendance_app/core/utils/toast_helper.dart';
 import 'package:attendance_app/presentation/bloc/location/location_bloc.dart';
 import 'package:attendance_app/presentation/bloc/location/location_event.dart';
 import 'package:attendance_app/presentation/bloc/location/location_state.dart';
@@ -59,9 +60,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-        );
+        ToastHelper.errorToast(context, e.toString());
       }
     } finally {
       setState(() => _isLoadingGps = false);
@@ -77,9 +76,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
     }
 
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
-      );
+      ToastHelper.errorToast(context, error);
       return;
     }
 
@@ -134,21 +131,11 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
       body: BlocListener<LocationBloc, LocationState>(
         listener: (context, state) {
           if (state is LocationLoaded) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Lokasi berhasil ditambahkan'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            ToastHelper.successToast(context, 'Lokasi berhasil ditambahkan');
             Navigator.pop(context);
           }
           if (state is LocationError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            ToastHelper.errorToast(context, state.message);
           }
         },
         child: SingleChildScrollView(
