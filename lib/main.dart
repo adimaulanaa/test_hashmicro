@@ -2,7 +2,7 @@ import 'package:attendance_app/core/di/service_locator.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_bloc.dart';
 import 'package:attendance_app/presentation/bloc/location/location_bloc.dart';
 import 'package:attendance_app/presentation/bloc/location/location_event.dart';
-import 'package:attendance_app/presentation/screens/location/location_list_screen.dart';
+import 'package:attendance_app/presentation/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: const LocationListScreen(),
+        home: const SplashScreen(),
       ),
     );
   }
