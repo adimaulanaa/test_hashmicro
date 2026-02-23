@@ -1,3 +1,5 @@
+import 'package:attendance_app/core/constants/media_colors.dart';
+import 'package:attendance_app/core/utils/botton.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_bloc.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_event.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_state.dart';
@@ -25,11 +27,15 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Riwayat Absensi'),
+        title: const Text(
+          'Riwayat Absensi',
+          style: TextStyle(color: Colors.black, fontSize: 20),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       body: BlocBuilder<AttendanceBloc, AttendanceState>(
         builder: (context, state) {
@@ -46,11 +52,15 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                   const SizedBox(height: 8),
                   Text(state.message, textAlign: TextAlign.center),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: () => context
-                        .read<AttendanceBloc>()
-                        .add(GetAttendanceHistoriesEvent()),
-                    child: const Text('Coba Lagi'),
+                  UIButton(
+                    label: 'Coba Lagi',
+                    onPressed: () {
+                      context.read<AttendanceBloc>().add(
+                        GetAttendanceHistoriesEvent(),
+                      );
+                    },
+                    color: AppColors.primary,
+                    type: UIButtonType.filled,
                   ),
                 ],
               ),
@@ -67,7 +77,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history, size: 48, color: Colors.grey),
+                    Icon(Icons.history, size: 48, color: AppColors.primary),
                     SizedBox(height: 8),
                     Text(
                       'Belum ada riwayat absensi',
@@ -97,65 +107,60 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   Widget _buildHistoryCard(AttendanceHistoryEntity history) {
     final isCheckin = history.type == 'checkin';
     final isApproved = history.status == 'approved';
-
-    return Card(
+    
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor:
-                  isCheckin ? Colors.green.shade100 : Colors.orange.shade100,
-              child: Icon(
-                isCheckin ? Icons.login : Icons.logout,
-                color: isCheckin ? Colors.green : Colors.orange,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isCheckin ? 'Check In' : 'Check Out',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatDateTime(history.createdAt),
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Lat: ${history.latitude.toStringAsFixed(6)}, Lng: ${history.longitude.toStringAsFixed(6)}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: isApproved
-                    ? Colors.green.shade100
-                    : Colors.red.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                isApproved ? 'Approved' : 'Rejected',
-                style: TextStyle(
-                  color: isApproved
-                      ? Colors.green.shade700
-                      : Colors.red.shade700,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isApproved
+              ? Colors.green.withValues(alpha: 0.3)
+              : Colors.red.withValues(alpha: 0.3),
+          width: 2,
         ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+            child: Icon(
+              isCheckin ? Icons.login : Icons.logout,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isCheckin ? 'Check In' : 'Check Out',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatDateTime(history.createdAt),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Lat: ${history.latitude.toStringAsFixed(6)}, Lng: ${history.longitude.toStringAsFixed(6)}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            isApproved ? 'Approved' : 'Rejected',
+            style: TextStyle(
+              color: isApproved ? Colors.green.shade700 : Colors.red.shade700,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

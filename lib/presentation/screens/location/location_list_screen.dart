@@ -62,7 +62,11 @@ class LocationListScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.location_off, size: 48, color: Colors.grey),
+                    Icon(
+                      Icons.location_off,
+                      size: 48,
+                      color: AppColors.primary,
+                    ),
                     SizedBox(height: 8),
                     Text(
                       'Belum ada lokasi\nTambahkan lokasi terlebih dahulu',
@@ -75,7 +79,12 @@ class LocationListScreen extends StatelessWidget {
             }
 
             return ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 80,
+              ),
               itemCount: state.locations.length,
               itemBuilder: (context, index) {
                 final location = state.locations[index];
@@ -88,79 +97,54 @@ class LocationListScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Card(
-                    color: Colors.white,
+                  child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: AppColors.secondary,
-                        child: Icon(Icons.location_on, color: Colors.white),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        width: 1,
                       ),
-                      title: Text(
-                        location.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (location.address != null)
-                            Text(
-                              location.address!,
-                              style: const TextStyle(fontSize: 12),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          Text(
-                            'Lat: ${location.latitude.toStringAsFixed(6)} & Lng: ${location.longitude.toStringAsFixed(6)}',
-                            style: const TextStyle(fontSize: 12),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: AppColors.secondary,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                  backgroundColor: Colors.white,
-                                  title: const Text('Hapus Lokasi'),
-                                  content: Text(
-                                    'Yakin ingin menghapus lokasi ${location.name}?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Batal', style: TextStyle(
-                                          color: Colors.black,
-                                        ),),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        context.read<LocationBloc>().add(
-                                          DeleteLocationEvent(location.id),
-                                        );
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text(
-                                        'Hapus',
-                                        style: TextStyle(
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                location.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
                                 ),
-                              );
-                            },
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                'Lat: ${location.latitude.toStringAsFixed(6)} & Lng: ${location.longitude.toStringAsFixed(6)}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              if (location.address != null)
+                                Text(
+                                  location.address!,
+                                  style: const TextStyle(fontSize: 12),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 );
