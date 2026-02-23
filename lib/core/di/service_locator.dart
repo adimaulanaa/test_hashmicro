@@ -1,6 +1,8 @@
 import 'package:attendance_app/data/datasources/local_database.dart';
 import 'package:attendance_app/data/repositories/attendance_repository_impl.dart';
 import 'package:attendance_app/data/repositories/location_repository_impl.dart';
+import 'package:attendance_app/domain/repositories/attendance_repository.dart';
+import 'package:attendance_app/domain/repositories/location_repository.dart';
 import 'package:attendance_app/domain/usecases/attendance/get_attendance_history_usecase.dart';
 import 'package:attendance_app/domain/usecases/attendance/submit_attendance_usecase.dart';
 import 'package:attendance_app/domain/usecases/attendance/validate_radius_usecase.dart';
@@ -19,10 +21,10 @@ Future<void> setupLocator() async {
   sl.registerLazySingleton<LocalDatabase>(() => LocalDatabase());
 
   // repositories
-  sl.registerLazySingleton<LocationRepositoryImpl>(
+  sl.registerLazySingleton<LocationRepository>(
     () => LocationRepositoryImpl(sl()),
   );
-  sl.registerLazySingleton<AttendanceRepositoryImpl>(
+  sl.registerLazySingleton<AttendanceRepository>(
     () => AttendanceRepositoryImpl(sl()),
   );
 

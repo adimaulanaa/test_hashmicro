@@ -1,3 +1,5 @@
+import 'package:attendance_app/core/constants/media_colors.dart';
+import 'package:attendance_app/core/utils/botton.dart';
 import 'package:attendance_app/presentation/bloc/location/location_bloc.dart';
 import 'package:attendance_app/presentation/bloc/location/location_event.dart';
 import 'package:attendance_app/presentation/bloc/location/location_state.dart';
@@ -12,10 +14,14 @@ class LocationListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Master Lokasi'),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
+        title: const Text(
+          'Attendance Apps',
+          style: TextStyle(color: Colors.black, fontSize: 20),
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.white,
         foregroundColor: Colors.white,
       ),
       body: BlocBuilder<LocationBloc, LocationState>(
@@ -34,7 +40,8 @@ class LocationListScreen extends StatelessWidget {
                   Text(state.message, textAlign: TextAlign.center),
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: () => context.read<LocationBloc>().add(GetLocationsEvent()),
+                    onPressed: () =>
+                        context.read<LocationBloc>().add(GetLocationsEvent()),
                     child: const Text('Coba Lagi'),
                   ),
                 ],
@@ -65,65 +72,78 @@ class LocationListScreen extends StatelessWidget {
               itemCount: state.locations.length,
               itemBuilder: (context, index) {
                 final location = state.locations[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: const CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.location_on, color: Colors.white),
-                    ),
-                    title: Text(
-                      location.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Lat: ${location.latitude.toStringAsFixed(6)}\nLng: ${location.longitude.toStringAsFixed(6)}',
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AttendanceScreen(location: location),
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: const Text('Hapus Lokasi'),
-                                content: Text('Yakin ingin menghapus lokasi ${location.name}?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Batal'),
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AttendanceScreen(location: location),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    color: Colors.white,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: AppColors.secondary,
+                        child: Icon(Icons.location_on, color: Colors.white),
+                      ),
+                      title: Text(
+                        location.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Latitude: ${location.latitude.toStringAsFixed(6)}',
+                          ),
+                          Text(
+                            'Longitude: ${location.longitude.toStringAsFixed(6)}',
+                          ),
+                        ],
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon:  Icon(
+                              Icons.delete_outline,
+                              color: AppColors.primary,
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: const Text('Hapus Lokasi'),
+                                  content: Text(
+                                    'Yakin ingin menghapus lokasi ${location.name}?',
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      context.read<LocationBloc>().add(
-                                            DeleteLocationEvent(location.id),
-                                          );
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text(
-                                      'Hapus',
-                                      style: TextStyle(color: Colors.red),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Batal'),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                                    TextButton(
+                                      onPressed: () {
+                                        context.read<LocationBloc>().add(
+                                          DeleteLocationEvent(location.id),
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text(
+                                        'Hapus',
+                                        style: TextStyle(color: AppColors.primary),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -134,17 +154,20 @@ class LocationListScreen extends StatelessWidget {
           return const SizedBox();
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddLocationScreen()),
-          );
-        },
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_location_alt),
-        label: const Text('Tambah Lokasi'),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(left: 15, right: 15),
+        child: UIButton(
+          label: 'Tambah Lokasi',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddLocationScreen()),
+            );
+          },
+          color: AppColors.primary,
+          type: UIButtonType.filled,
+        ),
       ),
     );
   }

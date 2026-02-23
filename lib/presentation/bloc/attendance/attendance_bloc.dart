@@ -41,7 +41,8 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     emit(AttendanceLoading());
     try {
       final attendances = await _attendanceRepository.getAttendances();
-      emit(AttendanceLoaded(attendances: attendances));
+      final todayAttendance = await _attendanceRepository.getTodayAttendance(event.locationId);
+      emit(AttendanceLoaded(attendances: attendances, todayAttendance: todayAttendance));
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }

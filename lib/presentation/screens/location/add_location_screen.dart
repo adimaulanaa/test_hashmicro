@@ -1,8 +1,14 @@
+import 'package:attendance_app/core/constants/media_colors.dart';
+import 'package:attendance_app/core/utils/botton.dart';
+import 'package:attendance_app/core/utils/custom_text_field.dart';
 import 'package:attendance_app/presentation/bloc/location/location_bloc.dart';
 import 'package:attendance_app/presentation/bloc/location/location_event.dart';
 import 'package:attendance_app/presentation/bloc/location/location_state.dart';
+import 'package:attendance_app/presentation/screens/location/pick_location_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../services/gps_service.dart';
 import '../../../core/di/service_locator.dart';
 
@@ -14,17 +20,24 @@ class AddLocationScreen extends StatefulWidget {
 }
 
 class _AddLocationScreenState extends State<AddLocationScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _latController = TextEditingController();
-  final _lngController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
   bool _isLoadingGps = false;
+  double? _selectedLat;
+  double? _selectedLng;
+  String? _address;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _latController.dispose();
-    _lngController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
     super.dispose();
   }
 
@@ -32,17 +45,22 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
     setState(() => _isLoadingGps = true);
     try {
       final position = await sl<GpsService>().getCurrentPosition();
+      final address = await _getAddressFromLatLng(
+        position.latitude,
+        position.longitude,
+      );
+
       setState(() {
-        _latController.text = position.latitude.toString();
-        _lngController.text = position.longitude.toString();
+        _address = address;
+        _selectedLat = position.latitude;
+        _selectedLng = position.longitude;
+        _latitudeController.text = position.latitude.toStringAsFixed(6);
+        _longitudeController.text = position.longitude.toStringAsFixed(6);
       });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -51,25 +69,66 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    String? error;
+    if (_nameController.text.trim().isEmpty) {
+      error = 'Nama lokasi tidak boleh kosong';
+    } else if (_selectedLat == null || _selectedLng == null) {
+      error = 'Pilih lokasi di peta atau gunakan lokasi saat ini';
+    }
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     context.read<LocationBloc>().add(
-          AddLocationEvent(
-            name: _nameController.text.trim(),
-            latitude: double.parse(_latController.text),
-            longitude: double.parse(_lngController.text),
-          ),
-        );
+      AddLocationEvent(
+        name: _nameController.text.trim(),
+        latitude: _selectedLat!,
+        longitude: _selectedLng!,
+      ),
+    );
+  }
+
+  Future<String?> _getAddressFromLatLng(double lat, double lng) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isEmpty) return null;
+      final place = placemarks.first;
+
+      final parts = [
+        if (place.subLocality != null && place.subLocality!.isNotEmpty)
+          place.subLocality,
+        if (place.locality != null && place.locality!.isNotEmpty)
+          place.locality,
+        if (place.subAdministrativeArea != null &&
+            place.subAdministrativeArea!.isNotEmpty)
+          place.subAdministrativeArea,
+        if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty)
+          place.administrativeArea,
+      ];
+
+      return parts.join(', ');
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Tambah Lokasi'),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Attendance Apps',
+          style: TextStyle(color: Colors.black, fontSize: 20),
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       body: BlocListener<LocationBloc, LocationState>(
         listener: (context, state) {
@@ -93,111 +152,118 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
         },
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Informasi Lokasi',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomTextField(
+                label: 'Nama Lokasi',
+                hintText: 'Contoh: Kantor Pusat',
+                prefixIcon: Icons.business,
+                controller: _nameController,
+              ),
+              if (_address != null)
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nama Lokasi',
-                    hintText: 'contoh: Kantor Pusat',
-                    prefixIcon: Icon(Icons.business),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Nama lokasi tidak boleh kosong';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _latController,
-                        decoration: const InputDecoration(
-                          labelText: 'Latitude',
-                          prefixIcon: Icon(Icons.location_on),
-                          border: OutlineInputBorder(),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.place, color: Colors.grey, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _address!,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Latitude tidak boleh kosong';
-                          }
-                          final lat = double.tryParse(value);
-                          if (lat == null) return 'Format tidak valid';
-                          if (lat < -90 || lat > 90) return 'Latitude harus antara -90 dan 90';
-                          return null;
-                        },
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _lngController,
-                        decoration: const InputDecoration(
-                          labelText: 'Longitude',
-                          prefixIcon: Icon(Icons.location_on),
-                          border: OutlineInputBorder(),
+                    ],
+                  ),
+                ),
+              if (_selectedLat != null && _selectedLng != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          label: 'Latitude',
+                          hintText: '-',
+                          prefixIcon: Icons.location_on,
+                          enabled: false,
+                          controller: _latitudeController,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Longitude tidak boleh kosong';
-                          }
-                          final lng = double.tryParse(value);
-                          if (lng == null) return 'Format tidak valid';
-                          if (lng < -180 || lng > 180) return 'Longitude harus antara -180 dan 180';
-                          return null;
-                        },
                       ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: CustomTextField(
+                          label: 'Longitude',
+                          hintText: '-',
+                          prefixIcon: Icons.location_on,
+                          enabled: false,
+                          controller: _longitudeController,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 12),
+              UIButton(
+                label: _isLoadingGps
+                    ? 'Mengambil lokasi...'
+                    : 'Gunakan Lokasi Saat Ini',
+                onPressed: _getCurrentLocation,
+                color: AppColors.secondary,
+                type: UIButtonType.outlined,
+              ),
+              const SizedBox(height: 12),
+              UIButton(
+                label: 'Pilih Lokasi di Peta',
+                color: AppColors.secondary,
+                type: UIButtonType.outlined,
+                onPressed: () async {
+                  final geoPoint = await Navigator.push<GeoPoint>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PickLocationScreen(),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _isLoadingGps ? null : _getCurrentLocation,
-                  icon: _isLoadingGps
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.my_location),
-                  label: Text(_isLoadingGps ? 'Mengambil lokasi...' : 'Gunakan Lokasi Saat Ini'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text(
-                    'Simpan Lokasi',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
+                  );
+                  if (geoPoint != null) {
+                    final address = await _getAddressFromLatLng(
+                      geoPoint.latitude,
+                      geoPoint.longitude,
+                    );
+
+                    setState(() {
+                      _address = address;
+                      _selectedLat = geoPoint.latitude;
+                      _selectedLng = geoPoint.longitude;
+                      _latitudeController.text = geoPoint.latitude
+                          .toStringAsFixed(6);
+                      _longitudeController.text = geoPoint.longitude
+                          .toStringAsFixed(6);
+                    });
+                  }
+                },
+              ),
+            ],
           ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(left: 15, right: 15),
+        child: UIButton(
+          label: 'Simpan Lokasi',
+          onPressed: _submit,
+          color: AppColors.primary,
+          type: UIButtonType.filled,
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:attendance_app/presentation/bloc/attendance/attendance_bloc.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_event.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_state.dart';
+import 'package:attendance_app/presentation/screens/attendance/attendance_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/location_entity.dart';
@@ -18,7 +19,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AttendanceBloc>().add(GetAttendancesEvent());
+    context.read<AttendanceBloc>().add(GetAttendancesEvent(widget.location.id));
   }
 
   @override
@@ -33,14 +34,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (_) => AttendanceHistoryScreen(
-              //       locationId: widget.location.id,
-              //     ),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AttendanceHistoryScreen(
+                    locationId: widget.location.id,
+                  ),
+                ),
+              );
             },
           ),
         ],
@@ -54,7 +55,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-            context.read<AttendanceBloc>().add(GetAttendancesEvent());
+            context.read<AttendanceBloc>().add(GetAttendancesEvent(widget.location.id));
           }
           if (state is AttendanceRejected) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +65,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 duration: const Duration(seconds: 4),
               ),
             );
-            context.read<AttendanceBloc>().add(GetAttendancesEvent());
+            context.read<AttendanceBloc>().add(GetAttendancesEvent(widget.location.id));
           }
           if (state is AttendanceError) {
             ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,10 @@
 abstract class AttendanceEvent {}
 
-class GetAttendancesEvent extends AttendanceEvent {}
+class GetAttendancesEvent extends AttendanceEvent {
+  final String locationId;
+
+  GetAttendancesEvent(this.locationId);
+}
 
 class GetAttendanceHistoriesEvent extends AttendanceEvent {}
 
