@@ -28,6 +28,7 @@ class LocationRepositoryImpl implements LocationRepository {
         name: location.name,
         latitude: location.latitude,
         longitude: location.longitude,
+        address: location.address,
         createdAt: location.createdAt,
       ).toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,

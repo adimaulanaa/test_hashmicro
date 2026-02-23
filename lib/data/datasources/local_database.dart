@@ -33,6 +33,7 @@ class LocalDatabase {
         name TEXT NOT NULL,
         latitude REAL NOT NULL,
         longitude REAL NOT NULL,
+        address TEXT,
         created_at TEXT NOT NULL
       )
     ''');

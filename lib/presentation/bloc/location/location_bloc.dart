@@ -49,6 +49,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
         name: event.name,
         latitude: event.latitude,
         longitude: event.longitude,
+        address: event.address,
         createdAt: DateTime.now(),
       );
       await _addLocationUsecase(location);

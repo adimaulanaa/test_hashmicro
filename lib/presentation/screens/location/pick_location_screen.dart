@@ -1,3 +1,5 @@
+import 'package:attendance_app/core/constants/media_colors.dart';
+import 'package:attendance_app/core/utils/botton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import '../../../services/gps_service.dart';
@@ -32,10 +34,13 @@ class _PickLocationScreenState extends State<PickLocationScreen> {
     return CustomPickerLocation(
       controller: _pickerController,
       appBarPicker: AppBar(
-        title: const Text('Pilih Lokasi'),
+        title: const Text(
+          'Pilih Lokasi',
+          style: TextStyle(color: Colors.black, fontSize: 20),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       onMapReady: (isReady) async {
         if (isReady) {
@@ -60,7 +65,8 @@ class _PickLocationScreenState extends State<PickLocationScreen> {
         bottom: 16,
         left: 16,
         right: 16,
-        child: ElevatedButton.icon(
+        child:  UIButton(
+          label: 'Simpan Lokasi',
           onPressed: () async {
             final geoPoint = await _pickerController
                 .selectAdvancedPositionPicker();
@@ -68,13 +74,8 @@ class _PickLocationScreenState extends State<PickLocationScreen> {
               Navigator.pop(context, geoPoint);
             }
           },
-          icon: const Icon(Icons.check),
-          label: const Text('Pilih Lokasi Ini'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
+          color: AppColors.primary,
+          type: UIButtonType.filled,
         ),
       ),
     );

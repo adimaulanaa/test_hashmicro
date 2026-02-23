@@ -88,6 +88,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
         name: _nameController.text.trim(),
         latitude: _selectedLat!,
         longitude: _selectedLng!,
+        address: _address,
       ),
     );
   }

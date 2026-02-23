@@ -35,14 +35,21 @@ class LocationListScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Colors.white,
+                  ),
                   const SizedBox(height: 8),
                   Text(state.message, textAlign: TextAlign.center),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<LocationBloc>().add(GetLocationsEvent()),
-                    child: const Text('Coba Lagi'),
+                  UIButton(
+                    label: 'Coba Lagi',
+                    onPressed: () {
+                      context.read<LocationBloc>().add(GetLocationsEvent());
+                    },
+                    color: AppColors.primary,
+                    type: UIButtonType.filled,
                   ),
                 ],
               ),
@@ -96,11 +103,16 @@ class LocationListScreen extends StatelessWidget {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (location.address != null)
+                            Text(
+                              location.address!,
+                              style: const TextStyle(fontSize: 12),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           Text(
-                            'Latitude: ${location.latitude.toStringAsFixed(6)}',
-                          ),
-                          Text(
-                            'Longitude: ${location.longitude.toStringAsFixed(6)}',
+                            'Lat: ${location.latitude.toStringAsFixed(6)} & Lng: ${location.longitude.toStringAsFixed(6)}',
+                            style: const TextStyle(fontSize: 12),
                           ),
                         ],
                       ),
@@ -108,7 +120,7 @@ class LocationListScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon:  Icon(
+                            icon: Icon(
                               Icons.delete_outline,
                               color: AppColors.primary,
                             ),
@@ -134,7 +146,9 @@ class LocationListScreen extends StatelessWidget {
                                       },
                                       child: const Text(
                                         'Hapus',
-                                        style: TextStyle(color: AppColors.primary),
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                        ),
                                       ),
                                     ),
                                   ],

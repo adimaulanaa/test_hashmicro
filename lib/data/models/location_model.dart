@@ -6,6 +6,7 @@ class LocationModel extends LocationEntity {
     required super.name,
     required super.latitude,
     required super.longitude,
+    super.address,
     required super.createdAt,
   });
 
@@ -15,6 +16,7 @@ class LocationModel extends LocationEntity {
       name: map['name'],
       latitude: map['latitude'],
       longitude: map['longitude'],
+      address: map['address'],
       createdAt: DateTime.parse(map['created_at']),
     );
   }
@@ -25,6 +27,7 @@ class LocationModel extends LocationEntity {
       'name': name,
       'latitude': latitude,
       'longitude': longitude,
+      'address': address,
       'created_at': createdAt.toIso8601String(),
     };
   }
