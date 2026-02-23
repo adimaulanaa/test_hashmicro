@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:attendance_app/core/constants/media_colors.dart';
+import 'package:attendance_app/core/di/service_locator.dart';
+import 'package:attendance_app/core/utils/distance_helper.dart';
 import 'package:attendance_app/core/utils/toast_helper.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_bloc.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_event.dart';
 import 'package:attendance_app/presentation/bloc/attendance/attendance_state.dart';
 import 'package:attendance_app/presentation/screens/attendance/attendance_history_screen.dart';
 import 'package:attendance_app/presentation/widgets/slide_action_button.dart';
+import 'package:attendance_app/services/gps_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/location_entity.dart';
@@ -24,12 +27,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final todayTime = DateTime.now();
   Timer? _timer;
   String _currentTime = '';
+  String? _distanceText;
 
   @override
   void initState() {
     super.initState();
     context.read<AttendanceBloc>().add(GetAttendancesEvent(widget.location.id));
     _startTimer();
+    _getDistance();
   }
 
   void _startTimer() {
@@ -262,6 +267,50 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   ],
                                 ),
                               ),
+                              if (_distanceText != null)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _isWithinRadius()
+                                        ? Colors.green.shade50
+                                        : Colors.red.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: _isWithinRadius()
+                                          ? Colors.green.shade200
+                                          : Colors.red.shade200,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        _isWithinRadius()
+                                            ? Icons.check_circle
+                                            : Icons.warning,
+                                        size: 16,
+                                        color: _isWithinRadius()
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        _distanceText!,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: _isWithinRadius()
+                                              ? Colors.green.shade700
+                                              : Colors.red.shade700,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -342,6 +391,35 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _getDistance() async {
+    try {
+      final position = await sl<GpsService>().getCurrentPosition();
+      final distance = DistanceHelper.calculateDistance(
+        position.latitude,
+        position.longitude,
+        widget.location.latitude,
+        widget.location.longitude,
+      );
+
+      setState(() {
+        if (distance < 1000) {
+          _distanceText = '${distance.toStringAsFixed(0)} meter dari lokasi';
+        } else {
+          _distanceText =
+              '${(distance / 1000).toStringAsFixed(1)} km dari lokasi';
+        }
+      });
+    } catch (e) {
+      setState(() => _distanceText = null);
+    }
+  }
+
+  bool _isWithinRadius() {
+    if (_distanceText == null) return false;
+    final distance = double.tryParse(_distanceText!.split(' ').first) ?? 0;
+    return distance <= 50;
   }
 
   String _formatDate(DateTime date) {

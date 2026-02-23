@@ -130,14 +130,12 @@ class _ToastWidgetState extends State<_ToastWidget>
                   ),
                 ],
               ),
-              child: Expanded(
-                child: Text(
-                  widget.msg,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+              child: Text(
+                widget.msg,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

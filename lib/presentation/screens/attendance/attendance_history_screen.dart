@@ -73,15 +73,32 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 .toList();
 
             if (filtered.isEmpty) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history, size: 48, color: AppColors.primary),
-                    SizedBox(height: 8),
+                    Icon(
+                      Icons.history_toggle_off,
+                      size: 80,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       'Belum ada riwayat absensi',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Riwayat absensi kamu akan\nmuncul di sini',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade400,
+                      ),
                     ),
                   ],
                 ),
@@ -107,7 +124,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   Widget _buildHistoryCard(AttendanceHistoryEntity history) {
     final isCheckin = history.type == 'checkin';
     final isApproved = history.status == 'approved';
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
