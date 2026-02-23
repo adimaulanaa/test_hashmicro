@@ -253,6 +253,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                   }
                 },
               ),
+              const SizedBox(height: 12),
             ],
           ),
         ),

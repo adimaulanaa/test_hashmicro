@@ -128,6 +128,7 @@ class LocationListScreen extends StatelessWidget {
                               showDialog(
                                 context: context,
                                 builder: (_) => AlertDialog(
+                                  backgroundColor: Colors.white,
                                   title: const Text('Hapus Lokasi'),
                                   content: Text(
                                     'Yakin ingin menghapus lokasi ${location.name}?',
@@ -135,7 +136,9 @@ class LocationListScreen extends StatelessWidget {
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context),
-                                      child: const Text('Batal'),
+                                      child: const Text('Batal', style: TextStyle(
+                                          color: Colors.black,
+                                        ),),
                                     ),
                                     TextButton(
                                       onPressed: () {
